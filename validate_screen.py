@@ -7,6 +7,7 @@ RM_TOTAL = 10.0
 S0 = [1, 0, 0, 0]
 s_grid_2000 = np.linspace(0, 1, 2000)
 s_grid_4000 = np.linspace(0, 1, 4000)
+s_grid_1000 = np.linspace(0, 1, 1000)
 
 # Emission region j(s) for s < 0.3
 def j_of_s_emission(s):
