@@ -6,7 +6,7 @@ from integrate import integrate_ray
 RM_TOTAL = 10.0
 S0 = [1, 0, 0, 0]
 s_grid_2000 = np.linspace(0, 1, 2000)
-s_grid_1000 = np.linspace(0, 1, 1000)
+s_grid_4000 = np.linspace(0, 1, 4000)
 
 # Emission region j(s) for s < 0.3
 def j_of_s_emission(s):
@@ -48,11 +48,16 @@ if len(results) > 0:
 # Convergence check
 lam2 = 0.1
 K_of_s = lambda s: K_of_s_faraday(s, lam2)
+S_4000 = integrate_ray(s_grid_4000, j_of_s_emission, K_of_s, S0)
+chi_true = 0.5 * np.arctan2(S_4000[-1, 2], S_4000[-1, 1])
+
 S_2000 = integrate_ray(s_grid_2000, j_of_s_emission, K_of_s, S0)
-S_1000 = integrate_ray(s_grid_1000, j_of_s_emission, K_of_s, S0)
 chi_2000 = 0.5 * np.arctan2(S_2000[-1, 2], S_2000[-1, 1])
+
+S_1000 = integrate_ray(s_grid_1000, j_of_s_emission, K_of_s, S0)
 chi_1000 = 0.5 * np.arctan2(S_1000[-1, 2], S_1000[-1, 1])
-error_ratio = abs((chi_2000 - chi_1000) / (S_2000[-1] - S_1000[-1])) * 2
+
+error_ratio = abs((chi_1000 - chi_true) / (chi_2000 - chi_true))
 
 if error_ratio > 16:
     print("PASS: Convergence check passed, error shrinks by ~16x when steps double.")
