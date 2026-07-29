@@ -31,15 +31,19 @@ for lam2 in lam2_values:
     K_of_s = lambda s: K_of_s_faraday(s, lam2)
     S_2000 = integrate_ray(s_grid_2000, j_of_s_emission, K_of_s, S0)
     chi = 0.5 * np.arctan2(S_2000[-1, 2], S_2000[-1, 1])
-    results.append((lam2, chi, chi / lam2))
-    print(f"lam2: {lam2}, chi: {chi}, chi/lam2: {chi / lam2}")
+    if lam2 == 0.0:
+        print(f"lam2: {lam2}, chi: {chi}, chi/lam2: None (division by zero)")
+    else:
+        results.append((lam2, chi, chi / lam2))
+        print(f"lam2: {lam2}, chi: {chi}, chi/lam2: {chi / lam2}")
 
 # Check PASS criteria
-chi_over_lam2_values = [result[2] for result in results]
-if np.allclose(chi_over_lam2_values, RM_TOTAL * s_grid_2000[-1], atol=0.001):
-    print("PASS: chi/lam2 is constant across the sweep and equal to 10.0 within 0.1%.")
-else:
-    print("FAIL: chi/lam2 is not constant across the sweep or not equal to 10.0 within 0.1%.")
+if len(results) > 0:
+    chi_over_lam2_values = [result[2] for result in results]
+    if np.allclose(chi_over_lam2_values, RM_TOTAL * s_grid_2000[-1], atol=0.001):
+        print("PASS: chi/lam2 is constant across the sweep and equal to 10.0 within 0.1%.")
+    else:
+        print("FAIL: chi/lam2 is not constant across the sweep or not equal to 10.0 within 0.1%.")
 
 # Convergence check
 lam2 = 0.1
