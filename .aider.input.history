@@ -87,3 +87,14 @@
 
 # 2026-07-31 11:12:03.768359
 +Fix the lam2 sweep range in validate_burn.py: it should go from 0.001 to 0.5, not 0.001 to 0.1. Use lam2_values = np.logspace(np.log10(0.001), np.log10(0.5), 60) so it actually covers the first depolarization null at lam2=pi/10≈0.314 and the pi/20≈0.157 check point.
+
+# 2026-07-31 11:28:41.393249
++Create validate_conversion.py. Flat script. Slab s in [0,1], no emission inside; initial S0 = [1, 0, 0.5, 0]. Only rho_Q = 2*pi nonzero. Integrate with 2000 steps.
++
++PASS: U and V trade sinusoidally with spatial period exactly 1.0 (full cycle U -> V -> -U -> -V -> U across the slab); U(s=1) back to 0.5 within 0.1%, I unchanged, Q stays 0.
+
+# 2026-07-31 11:30:00.778041
++Y
+
+# 2026-07-31 11:30:17.836207
++python validate_conversion.py
