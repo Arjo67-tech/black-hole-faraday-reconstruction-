@@ -24,3 +24,11 @@ Real units (real_units.py), Sgr A* RM = −5e5 rad/m²: rotation −48.7° at 23
 −56.8° at 213 GHz, −21.6° at 345 GHz, −348° at 86 GHz (near-full wrap — the n·180°
 ambiguity at long wavelengths). Difference between ALMA sidebands 213/229 GHz: −7.65°,
 the measurable depth signal this project is built on.
+
+## Phase 2: curved spacetime (all PASS)
+- geodesic_bridge over kgeo raytrace_ana: grazing ray min(r)=18.9131 (theory ~18.9), central ray captured at horizon r=2.0000
+- shadow edge by bisection: ±5.1960 at both 17 and 60 deg inclination (theory sqrt(27)=5.1962); spin a=0.9 asymmetric: +5.5036 / -4.3033
+- Einstein deflection: matches 3rd-order GR series, residuals 0.58% -> 0.01% shrinking exactly as truncation predicts
+- first images: blob flux within 0.7% of analytic integral; ring at r=6 shows direct ellipse + secondary image hugging the photon ring
+- orbiting hotspot at r=8: face-on peak/trough 1.29 (pure gravitational redshift, g centered on 1/u^t=0.79), edge-on 14.55 (Doppler beaming g^3 ~9x plus lensing), g range 0.478-2.277 straddling 1
+- orbital period 142.2 M = 48 min for Sgr A* — GRAVITY observed ~45 min real flare orbits
