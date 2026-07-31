@@ -24,7 +24,7 @@ def main():
         p_numeric = np.sqrt(Q**2 + U**2) / I
         chi_numeric = 0.5 * np.arctan2(U, Q)
         
-        p_theory = np.abs(np.sin(PHI * lam2) / (PHI * lam2))
+        p_theory = p0 * np.abs(np.sin(PHI * lam2) / (PHI * lam2))
         chi_theory = 0.5 * PHI * lam2
         
         results.append((lam2, p_numeric, p_theory, chi_numeric, chi_theory))
@@ -48,8 +48,10 @@ def main():
     first_null_index = np.argmin(p_values)
     lam2_first_null = lam2_values[first_null_index]
     
+   
     # Compute chi slope from a linear fit of chi_numeric_values vs lam2_values
-    chi_slope, _ = np.polyfit(lam2_values, chi_numeric_values, 1)
+    mask = lam2_values < 0.25
+    chi_slope, _ = np.polyfit(lam2_values[mask], chi_numeric_values[mask], 1)
     
     p_at_pi_over_20 = p_values[np.argmin(np.abs(lam2_values - np.pi / 20))]
     
