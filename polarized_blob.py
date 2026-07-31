@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 from contextlib import redirect_stdout
 from geodesic_bridge import trace_ray
 from integrate import integrate_ray
+import time
 
 DEVNULL = open(os.devnull, 'w')
 
