@@ -32,3 +32,13 @@ the measurable depth signal this project is built on.
 - first images: blob flux within 0.7% of analytic integral; ring at r=6 shows direct ellipse + secondary image hugging the photon ring
 - orbiting hotspot at r=8: face-on peak/trough 1.29 (pure gravitational redshift, g centered on 1/u^t=0.79), edge-on 14.55 (Doppler beaming g^3 ~9x plus lensing), g range 0.478-2.277 straddling 1
 - orbital period 142.2 M = 48 min for Sgr A* — GRAVITY observed ~45 min real flare orbits
+
+## Phase 3, Step 5: inference from noisy data (PASS)
+Corrupted the simulated Stokes data with realistic ALMA-class noise (1%
+amplitude, 1 degree angle), then recovered the hidden flux-weighted gas
+column from sideband angle differences alone via column = dchi/dlam2.
+Truth landed within the 2-sigma recovery band at 96% of phases (honest
+bars: ~95% expected by construction). Bootstrap errors shrink exactly as
+sqrt(N) when averaging phases: 0.1665 -> 0.0589 over 1 -> 8 phases.
+First blind recovery of a hidden physical quantity from noisy synthetic
+measurements — the full project's inference logic demonstrated end to end.
