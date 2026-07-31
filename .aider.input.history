@@ -246,3 +246,26 @@
 
 # 2026-07-31 11:44:54.517669
 +Y
+
+# 2026-07-31 11:46:41.790325
++/read-only coeffs.py integrate.py
+
+# 2026-07-31 11:46:51.281377
++Create real_units.py. Flat script, no integration — just arithmetic and prints.
++
++c = 2.998e8 m/s. Frequencies: 86e9, 213e9, 229e9, 230e9, 345e9 Hz. Compute lambda and lambda^2 for each. Sgr A* measured rotation measure: RM = -5e5 rad/m^2. Print, for each frequency, the Faraday rotation angle RM*lambda^2 in degrees. Also print the DIFFERENCE in rotation between the 213 and 229 GHz ALMA sidebands in degrees.
+
+# 2026-07-31 11:47:06.051176
++Y
+
+# 2026-07-31 11:47:21.370414
++/run real_units.py
+
+# 2026-07-31 11:47:27.806033
++Y
+
+# 2026-07-31 11:47:35.064638
++/run python real_units.py 
+
+# 2026-07-31 11:48:59.699780
++Y
