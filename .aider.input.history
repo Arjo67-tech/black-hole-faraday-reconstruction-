@@ -387,3 +387,22 @@
 
 # 2026-07-31 12:14:50.189022
 +Y
+
+# 2026-07-31 12:16:39.551559
++/read-only coeffs.py integrate.py geodesic_bridge.py
+
+# 2026-07-31 12:16:43.475585
++Create validate_deflection.py using trace_ray from geodesic_bridge.py, at a=0.0, th_o = 90.001 degrees in radians (nearly edge-on so the ray stays close to the equatorial plane), beta=0.0. Wrap trace_ray calls in contextlib.redirect_stdout to os.devnull.
++
++For b in [20.0, 30.0, 50.0, 100.0], trace the ray with alpha=b. The ray escapes. The deflection angle is: (total change in the 'ph' coordinate from start to end of the path) minus pi. Use the unwrapped ph array (np.unwrap) before taking the difference, so 2pi jumps don't corrupt it.
++
++Theory: deflection = 4/b + (15*pi/4)/b**2. Print a table: b, measured deflection, theory, 4/b alone (the famous leading term), and percent difference between measured and theory. PASS: measured within 3% of theory at every b. Print overall PASS/FAIL.
+
+# 2026-07-31 12:17:06.489678
++Y
+
+# 2026-07-31 12:17:28.493437
++/run python validate_deflection.py
+
+# 2026-07-31 12:19:30.446814
++Y
