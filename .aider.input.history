@@ -301,3 +301,89 @@
 
 # 2026-07-31 12:01:51.824227
 +Y
+
+# 2026-07-31 12:09:54.547136
++/read-only coeffs.py integrate.py geodesic_bridge.py
+
+# 2026-07-31 12:09:58.568439
++Create validate_shadow.py using trace_ray from geodesic_bridge.py. kgeo prints progress text on every call, so wrap each trace_ray call in contextlib.redirect_stdout to os.devnull to keep output clean.
++
++At a=0.0, th_o = 17 degrees in radians, beta=0.0: bisect alpha between 1.0 (captured) and 10.0 (escaped) until the captured/escaped boundary is found to within 1e-3. Print the boundary.
++
++PASS criteria:
++1. Boundary = 5.1962 within 0.002 (theory sqrt(27), the critical impact parameter of the r=3M photon orbit).
++2. Repeat at th_o = 60 degrees: same boundary within 0.002 — zero spin is spherically symmetric, inclination cannot matter.
++3. Repeat with alpha negative (bisect -1.0 to -10.0): boundary at -5.1962 within 0.002, symmetric.
++4. Then a=0.9: find the boundary on the +alpha side and the -alpha side separately. Print both. PASS if one is below 5.196 and the other above — spin drags light around with it, so the shadow goes asymmetric.
++Print all results and an overall PASS/FAIL.
+
+# 2026-07-31 12:11:20.895148
++Y
+
+# 2026-07-31 12:11:48.157232
++ Y
+
+# 2026-07-31 12:11:50.762997
++Y
+
+# 2026-07-31 12:13:48.081900
++cat > validate_shadow.py << 'EOF'
++import numpy as np
++import os
++from contextlib import redirect_stdout
++from geodesic_bridge import trace_ray
++
++DEVNULL = open(os.devnull, 'w')
++
++def is_captured(a, th_o, alpha, beta=0.0):
++    with redirect_stdout(DEVNULL):
++        return trace_ray(a, th_o, alpha, beta)['captured']
++
++def find_boundary(a, th_o, alpha_lo, alpha_hi, tol=1e-3):
++    # invariant: the two endpoints have different fates; move whichever
++    # endpoint matches the midpoint's fate
++    cap_lo = is_captured(a, th_o, alpha_lo)
++    cap_hi = is_captured(a, th_o, alpha_hi)
++    assert cap_lo != cap_hi, "endpoints must straddle the boundary"
++    while abs(alpha_hi - alpha_lo) > tol:
++        mid = 0.5 * (alpha_lo + alpha_hi)
++        if is_captured(a, th_o, mid) == cap_lo:
++            alpha_lo = mid
++        else:
++            alpha_hi = mid
++    return 0.5 * (alpha_lo + alpha_hi)
++
++b_theory = np.sqrt(27.0)
++
++b17_pos = find_boundary(0.0, np.radians(17.0),  1.0,  10.0)
++b17_neg = find_boundary(0.0, np.radians(17.0), -1.0, -10.0)
++b60_pos = find_boundary(0.0, np.radians(60.0),  1.0,  10.0)
++b60_neg = find_boundary(0.0, np.radians(60.0), -1.0, -10.0)
++b9_pos  = find_boundary(0.9, np.radians(17.0),  1.0,  10.0)
++b9_neg  = find_boundary(0.9, np.radians(17.0), -1.0, -10.0)
++
++print(f"a=0.0, th_o=17:  +{b17_pos:.4f}   {b17_neg:.4f}   (theory ±{b_theory:.4f})")
++print(f"a=0.0, th_o=60:  +{b60_pos:.4f}   {b60_neg:.4f}   (inclination must not matter)")
++print(f"a=0.9, th_o=17:  +{b9_pos:.4f}   {b9_neg:.4f}   (spin: asymmetric)")
++
++p1 = abs(b17_pos - b_theory) < 0.002 and abs(b17_neg + b_theory) < 0.002
++p2 = abs(b60_pos - b_theory) < 0.002 and abs(b60_neg + b_theory) < 0.002
++p3 = (b9_pos < b_theory) != (abs(b9_neg) < b_theory)   # exactly one side pulled in
++print("check 1 (sqrt27 at 17 deg):", "PASS" if p1 else "FAIL")
++print("check 2 (same at 60 deg):  ", "PASS" if p2 else "FAIL")
++print("check 3 (spin asymmetry):  ", "PASS" if p3 else "FAIL")
++print("OVERALL:", "PASS" if (p1 and p2 and p3) else "FAIL")
++EOF
++python validate_shadow.py
+
+# 2026-07-31 12:14:30.868203
++/run validate_shadow.py 
+
+# 2026-07-31 12:14:35.976231
++Y
+
+# 2026-07-31 12:14:44.578964
++/run python validate_shadow.py
+
+# 2026-07-31 12:14:50.189022
++Y
