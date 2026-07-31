@@ -15,3 +15,8 @@ def integrate_ray(s_grid, j_of_s, K_of_s, S0):
         S[i] = rk4_step(S[i-1], s_grid[i-1], h, j_of_s, K_of_s)
     
     return S
+
+def fit_slope(lam2_values, chi_values):
+    A = np.vstack([lam2_values, np.ones(len(lam2_values))]).T
+    m, c = np.linalg.lstsq(A, chi_values, rcond=None)[0]
+    return m
