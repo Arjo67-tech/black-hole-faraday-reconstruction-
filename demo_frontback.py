@@ -1,5 +1,5 @@
 import numpy as np
-from integrate import integrate_ray
+from integrate import integrate_ray, fit_slope  # Import fit_slope from integrate.py
 from coeffs import j_of_s, K_of_s
 
 def run_simulation(s_start, lam2_values):
@@ -12,7 +12,7 @@ def run_simulation(s_start, lam2_values):
         chi = S[-1, 1] / S[-1, 0]
         chi_values.append(chi)
     
-    slope = fit_slope(lam2_values, chi_values)
+    slope = fit_slope(lam2_values, chi_values)  # Now fit_slope is defined
     return slope
 
 def main():
