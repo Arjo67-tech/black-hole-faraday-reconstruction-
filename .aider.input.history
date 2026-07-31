@@ -406,3 +406,17 @@
 
 # 2026-07-31 12:19:30.446814
 +Y
+
+# 2026-07-31 12:20:47.114241
++/read-only coeffs.py integrate.py geodesic_bridge.py
+
+# 2026-07-31 12:20:51.737455
++Create render_scenes.py. Use trace_ray from geodesic_bridge.py and integrate_ray from integrate.py (read-only, do not modify). Wrap every trace_ray call in contextlib.redirect_stdout to os.devnull. matplotlib with Agg backend, save PNGs, no plt.show().
++
++Helper render(scene_emissivity, a, th_o, extent, npix): for each pixel (alpha, beta) on an npix x npix grid spanning [-extent, extent] in both, call trace_ray, then build the path length array: s = cumulative sum of segment lengths in 3D using dl = sqrt(dr^2 + (r*dth)^2 + (r*sin(th)*dph)^2) between consecutive path points, starting at 0. Build j_of_s by interpolating: for a query s value, find the nearest path point index and return [emissivity(r, th, ph) at that point, 0, 0, 0]. K_of_s returns np.zeros((4,4)). Run integrate_ray(s_grid, j_of_s, K_of_s, np.zeros(4)) with s_grid = the cumulative length array itself. Pixel value = final I. Skip integration for captured rays only if the emissivity is zero everywhere along them; otherwise integrate the same way (captured rays still pass through the scene before falling in).
++
++Scene A: gaussian blob, emissivity = exp(-((x-30)^2 + y^2 + z^2)/(2*1.5^2)) where x = r*sin(th)*cos(ph), y = r*sin(th)*sin(ph), z = r*cos(th). a=0.0, th_o = 5 degrees in radians, extent=40, npix=64. Compute total flux = sum of pixel values * pixel area. Then compute the flat-space comparison on the same grid: for each pixel, integrate the same gaussian along a straight line perpendicular to the image plane through that pixel (simple numerical integral, 400 steps over length 200 centered on the blob region), same pixel area weighting. Print both totals and percent difference. PASS if within 5%.
++
++Scene B: thin ring, emissivity = exp(-((r-6)^2)/(2*0.3^2)) * exp(-(z^2)/(2*0.3^2)) with z = r*cos(th). a=0.0, th_o = 60 degrees in radians, extent=12, npix=64. Save the image as render_ring.png with imshow, origin lower, extent labels.
++
++Print total runtime. PASS/FAIL for scene A, and confirm render_ring.png was written.
