@@ -420,3 +420,105 @@
 +Scene B: thin ring, emissivity = exp(-((r-6)^2)/(2*0.3^2)) * exp(-(z^2)/(2*0.3^2)) with z = r*cos(th). a=0.0, th_o = 60 degrees in radians, extent=12, npix=64. Save the image as render_ring.png with imshow, origin lower, extent labels.
 +
 +Print total runtime. PASS/FAIL for scene A, and confirm render_ring.png was written.
+
+# 2026-07-31 12:55:03.822435
++/read-only coeffs.py integrate.py geodesic_bridge.py 
+
+# 2026-07-31 12:55:10.310430
++Create polarized_blob.py. Reuse the ray-caching pattern from demo_hotspot.py: trace all pixels once, reuse paths. Wrap trace_ray in contextlib.redirect_stdout to os.devnull. matplotlib Agg, no plt.show().
++
++Static Gaussian blob (width 1.0) at r=8, th=pi/2, ph=0, a=0.0. Emission along each ray: j = emis * [1.0, 0.7, 0.0, 0.0] (70% polarized at angle 0). K_of_s returns np.zeros((4,4)). Skip rays where emis.max() < 1e-8. Redshift: multiply the ENTIRE final Stokes vector by g**3, where g = 1/(UT*(1-OMEGA*lam)) with OMEGA = 1/(8**1.5), UT = 8**1.5/np.sqrt(8**3 - 3*8**2), lam = -alpha*sin(th_o). Grid 32x32, extent 15.
++
++Render at th_o = 20 degrees and 75 degrees. For each: Itot, Qtot, Utot, Vtot = sums over pixels. p = sqrt(Qtot^2+Utot^2)/Itot, chi = 0.5*arctan2(Utot, Qtot).
++
++PASS per inclination: p = 0.7000 within 0.001, chi = 0.0 within 0.001 rad, max|V| < 1e-10. Print all numbers and overall PASS/FAIL.
+
+# 2026-07-31 12:55:11.857571
++Y
+
+# 2026-07-31 13:58:39.692682
++/run python polarized_blob.py
+
+# 2026-07-31 14:04:23.965323
++Y
+
+# 2026-07-31 14:04:48.470455
++/read-only coeffs.py integrate.py geodesic_bridge.py polarized_blob.py 
+
+# 2026-07-31 14:04:57.695429
++Create gas_faraday_tests.py using trace_ray from geodesic_bridge.py and integrate_ray from integrate.py. Wrap trace_ray in redirect_stdout to os.devnull. a=0.0, th_o = 60 degrees in radians, beta=0.0.
++
++Gas density: rho_F(r) = 0.3/(1+(r/4)**2). Faraday coefficient along a path: rho_V(s) = 2*rho_F(r(s))*lam2 (the factor 2 makes the polarization angle rotate by exactly lam2 * integral of rho_F dl, matching the Phase 1 screen convention). Build K_of_s from transfer_matrix(0,0,0,0, 0.0, 0.0, rho_V) via nearest path point, like render_scenes.py did for emissivity.
++
++For each test ray: initial S0 = [1.0, 0.7, 0.0, 0.0] (polarized light entering at the FAR end of the path), j_of_s = zeros. Build the cumulative path length s exactly as in render_scenes.py. For lam2 in np.linspace(0.2, 1.2, 5): integrate, chi = 0.5*arctan2(U,Q) at exit, fit slope of chi vs lam2 with np.polyfit.
++
++Ray 1 (far): alpha=30. Compute column_curved = integral of rho_F along this ray's own path (sum rho_F(r)*dl). Compute column_straight = 16*pi*0.3/sqrt(16+30**2). PASS-1: slope matches column_curved within 1%. Print column_straight for context with its percent offset.
++
++Ray 2 (near): alpha=6. Same: PASS-2: slope matches its own column_curved within 1%. Print ratio column_curved/column_straight where column_straight = 16*pi*0.3/sqrt(16+36); PASS-3: ratio > 1.05. Also retrace ray 2 with n_points=2000 and recompute the column; PASS-4: agrees with the 500-point column within 1%.
++
++Ambiguity demo: for ray 1 at lam2 = 7.15 (86 GHz), print true accumulated angle slope*7.15 and the observed exit chi (which lives in (-pi/2, pi/2]); note they differ by a multiple of pi.
++
++Print all PASS/FAIL and overall.
+
+# 2026-07-31 14:04:59.620296
++Y
+
+# 2026-07-31 14:26:46.167951
++ Create gas_faraday_tests.py using trace_ray from geodesic_bridge.py and integrate_ray from integrate.py. Wrap trace_ray in redirect_stdout to os.devnull. a=0.0, th_o = 60 degrees in 
++> radians, beta=0.0. 
++>  
++> Gas density: rho_F(r) = 0.3/(1+(r/4)**2). Faraday coefficient along a path: rho_V(s) = 2*rho_F(r(s))*lam2 (the factor 2 makes the polarization angle rotate by exactly lam2 * integral
++>  of rho_F dl, matching the Phase 1 screen convention). Build K_of_s from transfer_matrix(0,0,0,0, 0.0, 0.0, rho_V) via nearest path point, like render_scenes.py did for emissivity. 
++>  
++> For each test ray: initial S0 = [1.0, 0.7, 0.0, 0.0] (polarized light entering at the FAR end of the path), j_of_s = zeros. Build the cumulative path length s exactly as in render_sc
++> enes.py. For lam2 in np.linspace(0.2, 1.2, 5): integrate, chi = 0.5*arctan2(U,Q) at exit, fit slope of chi vs lam2 with np.polyfit. 
++>  
++> Ray 1 (far): alpha=30. Compute column_curved = integral of rho_F along this ray's own path (sum rho_F(r)*dl). Compute column_straight = 16*pi*0.3/sqrt(16+30**2). PASS-1: slope matche
++> s column_curved within 1%. Print column_straight for context with its percent offset. 
++>  
++> Ray 2 (near): alpha=6. Same: PASS-2: slope matches its own column_curved within 1%. Print ratio column_curved/column_straight where column_straight = 16*pi*0.3/sqrt(16+36); PASS-3: r
++> atio > 1.05. Also retrace ray 2 with n_points=2000 and recompute the column; PASS-4: agrees with the 500-point column within 1%. 
++>  
++> Ambiguity demo: for ray 1 at lam2 = 7.15 (86 GHz), print true accumulated angle slope*7.15 and the observed exit chi (which lives in (-pi/2, pi/2]); note they differ by a multiple of
++>  pi. 
++>  
++> Print all PASS/FAIL and overall.               
+
+# 2026-07-31 14:32:35.034509
++/read-only coeffs.py integrate.py geodesic_bridge.py polarized_blob.py
+
+# 2026-07-31 14:32:43.407015
++Create gas_faraday_tests.py using trace_ray from geodesic_bridge.py and integrate_ray from integrate.py. Wrap trace_ray in redirect_stdout to os.devnull. a=0.0, th_o = 60 degrees in radians, beta=0.0.
++
++Gas density: rho_F(r) = 0.3/(1+(r/4)**2). Faraday coefficient along a path: rho_V(s) = 2*rho_F(r(s))*lam2 (the factor 2 makes the polarization angle rotate by exactly lam2 * integral of rho_F dl, matching the Phase 1 screen convention). Build K_of_s from transfer_matrix(0,0,0,0, 0.0, 0.0, rho_V) via nearest path point, like render_scenes.py did for emissivity.
++
++For each test ray: initial S0 = [1.0, 0.7, 0.0, 0.0] (polarized light entering at the FAR end of the path), j_of_s = zeros. Build the cumulative path length s exactly as in render_scenes.py. For lam2 in np.linspace(0.2, 1.2, 5): integrate, chi = 0.5*arctan2(U,Q) at exit, fit slope of chi vs lam2 with np.polyfit.
++
++Ray 1 (far): alpha=30. Compute column_curved = integral of rho_F along this ray's own path (sum rho_F(r)*dl). Compute column_straight = 16*pi*0.3/sqrt(16+30**2). PASS-1: slope matches column_curved within 1%. Print column_straight for context with its percent offset.
++
++Ray 2 (near): alpha=6. Same: PASS-2: slope matches its own column_curved within 1%. Print ratio column_curved/column_straight where column_straight = 16*pi*0.3/sqrt(16+36); PASS-3: ratio > 1.05. Also retrace ray 2 with n_points=2000 and recompute the column; PASS-4: agrees with the 500-point column within 1%.
++
++Ambiguity demo: for ray 1 at lam2 = 7.15 (86 GHz), print true accumulated angle slope*7.15 and the observed exit chi (which lives in (-pi/2, pi/2]); note they differ by a multiple of pi.
++
++Print all PASS/FAIL and overall.
+
+# 2026-07-31 14:32:45.086869
++Y
+
+# 2026-07-31 14:38:09.338648
++/run python gas_faraday_tests.py 
+
+# 2026-07-31 14:43:02.106851
++Y
+
+# 2026-07-31 14:43:05.534909
++What's wrong? FixFix the import: transfer_matrix comes from coeffs, not integrate. Line 5 should be two imports: from integrate import integrate_ray, and from coeffs import transfer_matrix.
+
+# 2026-07-31 14:50:15.512831
++/run python gas_faraday_tests.py 
+
+# 2026-07-31 14:50:22.209799
++Y
+
+# 2026-07-31 14:50:58.174200
++/run nan gas_faraday_tests.py 
