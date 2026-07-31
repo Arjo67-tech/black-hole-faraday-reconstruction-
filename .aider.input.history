@@ -98,3 +98,151 @@
 
 # 2026-07-31 11:30:17.836207
 +python validate_conversion.py
+
+# 2026-07-31 11:33:34.028568
++Create demo_frontback.py. Flat script. s in [0,1]. Rotating column only in s in [0.3, 0.7], total RM = 10 (rho_V = 2*10/0.4*lam2 inside the column, 0 outside). Two runs:
++A) emitter at s=0.1 (delta-like: j = [1,0.7,0,0] only for s in [0.08,0.12]) — light crosses the full column.
++B) same emitter at s=0.9 — light crosses nothing.
++
++For each, sweep lam2 in [0.0, 0.05, 0.1, 0.15], record chi at s=1, fit slope of chi vs lam2.
++
++Print: slope_A, slope_B. PASS: slope_A = 10.0, slope_B = 0.0, both within 1%. Then print the point of the demo: at lam2=0.1 alone, run A with intrinsic angle 0 is IDENTICAL to run B with intrinsic angle 1.0 rad — print both final Stokes vectors to show they match. Frequency sweep breaks the tie; single frequency cannot.
++
+
+# 2026-07-31 11:33:43.106923
++Y
+
+# 2026-07-31 11:33:44.198009
++T
+
+# 2026-07-31 11:33:45.558985
++Y
+
+# 2026-07-31 11:39:52.293938
++/run python demo_frontback.py
+
+# 2026-07-31 11:39:55.022014
++Y
+
+# 2026-07-31 11:44:51.545357
++cat > coeffs.py << 'EOF'
++import numpy as np
++
++def transfer_matrix(alpha_I, alpha_Q, alpha_U, alpha_V, rho_Q, rho_U, rho_V):
++    K = np.array([
++        [alpha_I, alpha_Q, alpha_U, alpha_V],
++        [alpha_Q, alpha_I, rho_V, -rho_U],
++        [alpha_U, -rho_V, alpha_I, rho_Q],
++        [alpha_V, rho_U, -rho_Q, alpha_I]
++    ])
++    return K
++EOF
++
++cat > validate_burn.py << 'EOF'
++import numpy as np
++import matplotlib
++matplotlib.use('Agg')
++import matplotlib.pyplot as plt
++from coeffs import transfer_matrix
++from integrate import integrate_ray
++
++PHI = 10.0
++p0 = 0.7
++
++def j_of_s(s):
++    return np.array([1.0, 0.7, 0.0, 0.0])
++
++def make_K(lam2):
++    def K(s):
++        return transfer_matrix(0, 0, 0, 0, 0.0, 0.0, 2 * PHI * lam2)
++    return K
++
++lam2_values = np.logspace(np.log10(0.001), np.log10(0.5), 60)
++s_grid = np.linspace(0, 1, 2000)
++
++p_num, chi_num = [], []
++for lam2 in lam2_values:
++    S = integrate_ray(s_grid, j_of_s, make_K(lam2), np.zeros(4))
++    I, Q, U, V = S[-1]
++    p_num.append(np.sqrt(Q**2 + U**2) / I)
++    chi_num.append(0.5 * np.arctan2(U, Q))
++p_num = np.array(p_num); chi_num = np.array(chi_num)
++
++p_th = p0 * np.abs(np.sin(PHI * lam2_values) / (PHI * lam2_values))
++chi_th = 0.5 * PHI * lam2_values
++
++away = p_th >= 0.05
++err = np.max(np.abs((p_num[away] - p_th[away]) / p_th[away]))
++null_lam2 = lam2_values[np.argmin(p_num)]
++i20 = np.argmin(np.abs(lam2_values - np.pi/20))
++mask = lam2_values < 0.25
++slope = np.polyfit(lam2_values[mask], chi_num[mask], 1)[0]
++
++print(f"Max rel error of p (away from nulls): {err*100:.2f}%   (pass < 0.5%)")
++print(f"First null at lam2 = {null_lam2:.4f}   (theory pi/10 = {np.pi/10:.4f}, grid is coarse)")
++print(f"p/p0 at lam2=pi/20: {p_num[i20]/p0:.4f}   (theory 0.6366)")
++print(f"chi slope pre-null: {slope:.4f}   (expect 5.0, HALF the screen slope)")
++print("PASS" if (err < 0.005 and abs(slope - 5.0) < 0.05) else "FAIL")
++
++plt.figure(figsize=(8,5))
++plt.plot(lam2_values, p_th, '--', label='Burn 1966 theory')
++plt.plot(lam2_values, p_num, 'o', ms=3, label='numeric')
++plt.xscale('log'); plt.xlabel('lam2'); plt.ylabel('p'); plt.legend(); plt.grid(True)
++plt.savefig('p_vs_lam2.png', dpi=120)
++EOF
++
++cat > demo_frontback.py << 'EOF'
++import numpy as np
++from coeffs import transfer_matrix
++from integrate import integrate_ray
++
++S0 = np.zeros(4)
++s_grid = np.linspace(0, 1, 4000)
++RM = 10.0
++COL_LO, COL_HI = 0.3, 0.7
++WIDTH = COL_HI - COL_LO
++
++def make_j(s_center, chi0=0.0):
++    def j(s):
++        if s_center - 0.02 <= s <= s_center + 0.02:
++            return np.array([1.0, 0.7*np.cos(2*chi0), 0.7*np.sin(2*chi0), 0.0])
++        return np.zeros(4)
++    return j
++
++def make_K(lam2):
++    def K(s):
++        rho_V = 2.0 * RM / WIDTH * lam2 if COL_LO <= s <= COL_HI else 0.0
++        return transfer_matrix(0, 0, 0, 0, 0.0, 0.0, rho_V)
++    return K
++
++def exit_state(s_center, lam2, chi0=0.0):
++    S = integrate_ray(s_grid, make_j(s_center, chi0), make_K(lam2), S0)
++    I, Q, U, V = S[-1]
++    return 0.5*np.arctan2(U, Q), S[-1]
++
++lam2s = np.array([0.0, 0.05, 0.1, 0.15])
++chi_A = np.array([exit_state(0.1, l)[0] for l in lam2s])
++chi_B = np.array([exit_state(0.9, l)[0] for l in lam2s])
++
++slope_A = np.polyfit(lam2s, chi_A, 1)[0]
++slope_B = np.polyfit(lam2s, chi_B, 1)[0]
++print(f"slope A (behind column): {slope_A:.4f}   expect 10.0")
++print(f"slope B (in front):      {slope_B:.4f}   expect 0.0")
++print("PASS" if abs(slope_A-10.0) < 0.1 and abs(slope_B) < 0.1 else "FAIL")
++
++chiA, SA = exit_state(0.1, 0.1, chi0=0.0)
++chiB, SB = exit_state(0.9, 0.1, chi0=1.0)
++print("\nAt lam2=0.1 alone:")
++print("A (behind, intrinsic 0.0):   ", np.round(SA, 6))
++print("B (in front, intrinsic 1.0): ", np.round(SB, 6))
++print(f"chi_A = {chiA:.4f}, chi_B = {chiB:.4f}  -> identical at one frequency")
++print("Only the lam2 sweep separates them.")
++EOF
++
++python validate_burn.py
++python validate_conversion.py
++python demo_frontback.py
++git add -A && git commit -m "step 5: front/back demo, self-contained tests, restore coeffs after aider regression"
+
+# 2026-07-31 11:44:54.517669
++Y

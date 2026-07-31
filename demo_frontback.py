@@ -1,48 +1,45 @@
 import numpy as np
-from integrate import integrate_ray, fit_slope  # Import fit_slope from integrate.py
-from coeffs import j_of_s, K_of_s
+from coeffs import transfer_matrix
+from integrate import integrate_ray
 
-def run_simulation(s_start, lam2_values):
-    s_grid = np.linspace(0, 1, 100)
-    chi_values = []
-    
-    for lam2 in lam2_values:
-        S0 = np.array([1.0, 0.0, 0.0, 0.0])
-        S = integrate_ray(s_grid, j_of_s, lambda s: K_of_s(s, lam2), S0)
-        chi = S[-1, 1] / S[-1, 0]
-        chi_values.append(chi)
-    
-    slope = fit_slope(lam2_values, chi_values)  # Now fit_slope is defined
-    return slope
+S0 = np.zeros(4)
+s_grid = np.linspace(0, 1, 4000)
+RM = 10.0
+COL_LO, COL_HI = 0.3, 0.7
+WIDTH = COL_HI - COL_LO
 
-def main():
-    lam2_values = [0.0, 0.05, 0.1, 0.15]
-    
-    # Run A: emitter at s=0.1
-    slope_A = run_simulation(0.1, lam2_values)
-    
-    # Run B: emitter at s=0.9
-    slope_B = run_simulation(0.9, lam2_values)
-    
-    print(f"Slope A: {slope_A}")
-    print(f"Slope B: {slope_B}")
-    
-    if np.isclose(slope_A, 10.0, atol=0.01) and np.isclose(slope_B, 0.0, atol=0.01):
-        print("PASS")
-    else:
-        print("FAIL")
-    
-    # Run A with intrinsic angle 0 at lam2=0.1
-    s_grid = np.linspace(0, 1, 100)
-    S0_A = np.array([1.0, 0.0, 0.0, 0.0])
-    S_A = integrate_ray(s_grid, j_of_s, lambda s: K_of_s(s, 0.1), S0_A)
-    
-    # Run B with intrinsic angle 1.0 rad at lam2=0.1
-    S0_B = np.array([np.cos(1.0), np.sin(1.0), 0.0, 0.0])
-    S_B = integrate_ray(s_grid, j_of_s, lambda s: K_of_s(s, 0.1), S0_B)
-    
-    print("Final Stokes vector for Run A (intrinsic angle 0):", S_A[-1])
-    print("Final Stokes vector for Run B (intrinsic angle 1.0 rad):", S_B[-1])
+def make_j(s_center, chi0=0.0):
+    def j(s):
+        if s_center - 0.02 <= s <= s_center + 0.02:
+            return np.array([1.0, 0.7*np.cos(2*chi0), 0.7*np.sin(2*chi0), 0.0])
+        return np.zeros(4)
+    return j
 
-if __name__ == '__main__':
-    main()
+def make_K(lam2):
+    def K(s):
+        rho_V = 2.0 * RM / WIDTH * lam2 if COL_LO <= s <= COL_HI else 0.0
+        return transfer_matrix(0, 0, 0, 0, 0.0, 0.0, rho_V)
+    return K
+
+def exit_state(s_center, lam2, chi0=0.0):
+    S = integrate_ray(s_grid, make_j(s_center, chi0), make_K(lam2), S0)
+    I, Q, U, V = S[-1]
+    return 0.5*np.arctan2(U, Q), S[-1]
+
+lam2s = np.array([0.0, 0.05, 0.1, 0.15])
+chi_A = np.array([exit_state(0.1, l)[0] for l in lam2s])
+chi_B = np.array([exit_state(0.9, l)[0] for l in lam2s])
+
+slope_A = np.polyfit(lam2s, chi_A, 1)[0]
+slope_B = np.polyfit(lam2s, chi_B, 1)[0]
+print(f"slope A (behind column): {slope_A:.4f}   expect 10.0")
+print(f"slope B (in front):      {slope_B:.4f}   expect 0.0")
+print("PASS" if abs(slope_A-10.0) < 0.1 and abs(slope_B) < 0.1 else "FAIL")
+
+chiA, SA = exit_state(0.1, 0.1, chi0=0.0)
+chiB, SB = exit_state(0.9, 0.1, chi0=1.0)
+print("\nAt lam2=0.1 alone:")
+print("A (behind, intrinsic 0.0):   ", np.round(SA, 6))
+print("B (in front, intrinsic 1.0): ", np.round(SB, 6))
+print(f"chi_A = {chiA:.4f}, chi_B = {chiB:.4f}  -> identical at one frequency")
+print("Only the lam2 sweep separates them.")
