@@ -7,7 +7,7 @@ from integrate import integrate_ray
 def main():
     PHI = 10.0
     p0 = 0.7
-    lam2_values = np.logspace(-3, -1, 60)
+    lam2_values = np.logspace(np.log10(0.001), np.log10(0.5), 60)
     
     results = []
     
