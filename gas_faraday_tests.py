@@ -2,7 +2,8 @@ import numpy as np
 import os
 from contextlib import redirect_stdout
 from geodesic_bridge import trace_ray
-from integrate import integrate_ray, transfer_matrix
+from integrate import integrate_ray
+from coeffs import transfer_matrix
 
 DEVNULL = open(os.devnull, 'w')
 
