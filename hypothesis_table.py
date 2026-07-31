@@ -64,6 +64,7 @@ for kph, phb in enumerate(phis):
                 i = np.argmin(np.abs(s - sv))
                 return transfer_matrix(0,0,0,0, 0.0, 0.0, 2.0*rho_F(r[i])*lam2)
             S = integrate_ray(s, j_of_s, K_of_s, np.zeros(4))[-1]*g3
+            Ss[k] = S
             if k == '230':
                 I230 += S[0]; Q230 += S[1]; U230 += S[2]
             elif k == '213':
@@ -105,10 +106,10 @@ for phi in spot_phis:
             S = integrate_ray(s, j_of_s, K_of_s, np.zeros(4))[-1]*g3
             if k == '230':
                 I_direct.append(S[0])
-    I_interp = np.interp(phi, np.concatenate((phis, phis + 2*np.pi)), 
-                         np.concatenate((I230arr, I230arr)))
-    print(f"Spot check for phi={phi:.2f}: direct {np.mean(I_direct):.4f}, "
-          f"interpolated {I_interp:.4f}, diff {(np.mean(I_direct) - I_interp)/np.mean(I_direct)*100:.2f}%")
+    I_interp = np.interp(phi, np.append(phis, phis[0]+2*np.pi), 
+                         np.append(I230arr, I230arr[0]))
+    print(f"Spot check for phi={phi:.2f}: direct {np.sum(I_direct):.4f}, "
+          f"interpolated {I_interp:.4f}, diff {(np.sum(I_direct) - I_interp)/np.sum(I_direct)*100:.2f}%")
 
 # Degeneracy demo
 T = 2*np.pi/OMEGA
