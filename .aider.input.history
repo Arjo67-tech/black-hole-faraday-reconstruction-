@@ -269,3 +269,35 @@
 
 # 2026-07-31 11:48:59.699780
 +Y
+
+# 2026-07-31 11:59:50.163041
++/read-only coeffs.py integrate.py
++/read-only ~/kgeo/scripts/calc_t_equatorial_edgeon.py]
+
+# 2026-07-31 12:00:22.699526
++Create geodesic_bridge.py. One function trace_ray(a, th_o, alpha, beta, n_points=500) that uses kgeo's analytic raytracer — follow the exact call pattern from the read-only example script, do not invent API — for black hole spin a, observer inclination th_o (radians), and image-plane coordinates (alpha, beta) in units of M. Return a dict of plain numpy arrays: 'r', 'th', 'ph' (Boyer-Lindquist coordinates along the path), and a boolean 'captured' (True if the ray ends at the horizon, False if it escapes back to large radius).
++
++In __main__, demo two rays at a=0, th_o=17 degrees:
++1) alpha=20, beta=0 — must escape; print min(r), expect roughly 18-19 (weak bending at that offset).
++2) alpha=0.5, beta=0 — must be captured; print final r, expect near the horizon at r=2.
++Print PASS/FAIL for both.
+
+# 2026-07-31 12:00:40.002616
++Y
+
+# 2026-07-31 12:01:24.558054
++exit
+
+# 2026-07-31 12:01:44.298726
++/read-only coeffs.py integrate.py
+
+# 2026-07-31 12:01:50.153247
++Create geodesic_bridge.py. One function trace_ray(a, th_o, alpha, beta, n_points=500) that uses kgeo's analytic raytracer — follow the exact call pattern from the example script calc_t_equatorial_edgeon.py in ~/kgeo/scripts, do not invent API — for black hole spin a, observer inclination th_o (radians), and image-plane coordinates (alpha, beta) in units of M. Return a dict of plain numpy arrays: 'r', 'th', 'ph' (Boyer-Lindquist coordinates along the path), and a boolean 'captured' (True if the ray ends at the horizon, False if it escapes back to large radius).
++
++In __main__, demo two rays at a=0, th_o=17 degrees:
++1) alpha=20, beta=0 — must escape; print min(r), expect roughly 18-19 (weak bending at that offset).
++2) alpha=0.5, beta=0 — must be captured; print final r, expect near the horizon at r=2.
++Print PASS/FAIL for both.
+
+# 2026-07-31 12:01:51.824227
++Y

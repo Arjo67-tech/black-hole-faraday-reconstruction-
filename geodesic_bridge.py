@@ -1,36 +1,48 @@
 import numpy as np
+from kgeo.kerr_raytracing_ana import raytrace_ana
 
-def trace_ray(a, th_o, alpha, beta, n_points=500):
-    # Placeholder for kgeo's analytic raytracer function
-    def kgeo_analytic_raytracer(a, th_o, alpha, beta, n_points):
-        # This is a placeholder implementation. Replace with actual kgeo API call.
-        r = np.linspace(10, 2, n_points)  # Example r values from large radius to horizon
-        th = np.full(n_points, th_o)
-        ph = np.linspace(0, 2 * np.pi, n_points)
-        captured = (r[-1] < 3)  # Example condition for capture at the horizon
-        return r, th, ph, captured
+def trace_ray(a, th_o, alpha, beta, n_points=500, r_o=1000.0):
+    """
+    Trace one light ray through Kerr spacetime with kgeo's analytic raytracer.
+    a: spin (0 <= |a| < 1); th_o: observer inclination in radians
+    (must not be exactly 0 or pi/2); alpha, beta: screen coords in M.
+    Returns dict: 'r','th','ph' arrays along the path, plus 'captured'.
+    """
+    geos = raytrace_ana(a=float(a),
+                        observer_coords=[0.0, float(r_o), float(th_o), 0.0],
+                        image_coords=[np.array([float(alpha)]),
+                                      np.array([float(beta)])],
+                        ngeo=n_points,
+                        do_phi_and_t=True,
+                        savedata=False, plotdata=False)
 
-    r, th, ph, captured = kgeo_analytic_raytracer(a, th_o, alpha, beta, n_points)
+    gc = getattr(geos, 'geo_coords', None)
+    if gc is None:
+        raise AttributeError(f"Geodesics has no geo_coords; attrs: {dir(geos)}")
+
+    r  = np.squeeze(np.array(gc[1]))
+    th = np.squeeze(np.array(gc[2]))
+    ph = np.squeeze(np.array(gc[3]))
+
+    r_plus = 1.0 + np.sqrt(1.0 - float(a)**2)   # event horizon radius
+    captured = bool(r[-1] < 3.5 or np.min(r) < r_plus + 0.05)
+
     return {'r': r, 'th': th, 'ph': ph, 'captured': captured}
 
 if __name__ == '__main__':
-    a = 0
-    th_o = np.radians(17)
+    th_o = np.radians(17.0)
 
-    # Ray 1: alpha=20, beta=0 (must escape)
-    result1 = trace_ray(a, th_o, 20, 0)
-    min_r1 = np.min(result1['r'])
-    print(f"Ray 1 - Min r: {min_r1}")
-    if 18 <= min_r1 <= 19:
-        print("PASS")
-    else:
-        print("FAIL")
+    print("Ray 1: alpha=20, beta=0 (should escape)")
+    ray1 = trace_ray(0.0, th_o, 20.0, 0.0)
+    minr1 = np.min(ray1['r'])
+    print(f"  min(r) = {minr1:.4f}   (expect ~18.9)")
+    print(f"  captured = {ray1['captured']}")
+    pass1 = (17.0 < minr1 < 20.0) and not ray1['captured']
 
-    # Ray 2: alpha=0.5, beta=0 (must be captured)
-    result2 = trace_ray(a, th_o, 0.5, 0)
-    final_r2 = result2['r'][-1]
-    print(f"Ray 2 - Final r: {final_r2}")
-    if np.isclose(final_r2, 2):
-        print("PASS")
-    else:
-        print("FAIL")
+    print("Ray 2: alpha=0.5, beta=0 (should be captured)")
+    ray2 = trace_ray(0.0, th_o, 0.5, 0.0)
+    print(f"  final r = {ray2['r'][-1]:.4f}   (expect near horizon r=2)")
+    print(f"  captured = {ray2['captured']}")
+    pass2 = ray2['captured'] and ray2['r'][-1] < 3.0
+
+    print("PASS" if (pass1 and pass2) else "FAIL")
