@@ -522,3 +522,35 @@
 
 # 2026-07-31 14:50:58.174200
 +/run nan gas_faraday_tests.py 
+
+# 2026-07-31 16:27:30.751282
++/read-only coeffs.py integrate.py geodesic_bridge.py forward_model.py
+
+# 2026-07-31 16:27:41.325856
++Create hypothesis_table.py. Copy the imports, DEVNULL, constants block, rho_F, wrap_diff, and the entire ray-tracing-and-caching loop VERBATIM from forward_model.py (read-only), with exactly these changes: TH_O = np.radians(20.0), NPHASE is not used, add NAZ = 48. Keep A=0.0, R_ORB=8.0, SIG=1.0, NPIX=32, EXTENT=15.0, FREQS = {'230': 1.0, '213': (230.0/213.0)**2}, DLAM2 = FREQS['213'] - FREQS['230'], OMEGA and UT formulas unchanged.
++
++After caching rays, loop over phis = np.linspace(0, 2*np.pi, NAZ, endpoint=False). For each phi: blob at xb=8*cos(phi), yb=8*sin(phi). For every ray with emis.max() >= 1e-8 (emis = np.exp(-((x-xb)**2+(y-yb)**2+z**2)/(2*SIG**2)) using the ray's cached x,y,z arrays), integrate at both frequencies exactly as forward_model.py does (same j_of_s with [e, 0.7*e, 0, 0], same K_of_s with transfer_matrix(0,0,0,0,0,0, 2*rho_F(r[i])*lam2), multiply final Stokes by g**3). Accumulate per-phi: I230, Q230, U230, Q213, U213 (sums over rays), plus Ctab = flux-weighted column = sum over rays of (ray's I230 contribution * sum(emis*ray['C'])/sum(emis)) divided by sum of I230 contributions, and depth = 8*cos(phi)*np.sin(TH_O). Print progress per phi.
++
++Save np.savez('obs_table.npz', phis=phis, I=I230arr, Q230=..., U230=..., Q213=..., U213=..., C=Ctab, depth=deptharr).
++
++Spot check: for 3 azimuths NOT on the grid (phi = 0.11, 2.3, 4.87), render directly and compare I against linear interpolation of the table (np.interp with wraparound by appending phis[0]+2pi and row[0]). PASS-1: all 3 within 2%.
++
++Degeneracy demo: hypothesis A is the table read at phi_k = OMEGA*t_k (s=+1, phi0=0) and hypothesis B at phi_k = -OMEGA*t_k + pi (s=-1, phi0=pi), for t_k = 24 evenly spaced times over one period T=2*pi/OMEGA. Compute for both: I(t), dchi(t) = wrap_diff(0.5*arctan2(U213,Q213) - 0.5*arctan2(U230,Q230)) interpolating Q,U (NEVER interpolate angles directly), and depth(t). Print: max|I_A - I_B|/max(I_A) as a percent; np.corrcoef(depth_A, depth_B)[0,1]; np.corrcoef(dchi_A, dchi_B)[0,1]. PASS-2: depth correlation < -0.99. PASS-3: dchi correlation < -0.5. Print the intensity mismatch percent WITHOUT a pass threshold, labeled 'intensity degeneracy leak (lensing asymmetry)'. Print overall PASS/FAIL from PASS-1..3.
+
+# 2026-07-31 16:29:32.598279
++Y
+
+# 2026-07-31 16:30:26.154324
++/run python hypothesis_table.py
+
+# 2026-07-31 16:31:45.881094
++Y
+
+# 2026-07-31 16:31:51.727771
++What's wrong? FixIn hypothesis_table.py, the main per-phi loop crashes because Ss is created empty but never populated. Inside the FREQS loop, right after computing S = integrate_ray(...)[-1]*g3, add the line: Ss[k] = S. Keep everything else the same — the later lines Csum += Ss['230'][0] * ... and Isum += Ss['230'][0] will then work.Also in the spot check: I_direct is collected as a list of per-ray values and compared using np.mean(I_direct). The table stores SUMS over rays, so change it to np.sum(I_direct). The interpolation wraparound only needs one extra point, not a full doubled array: use np.interp(phi, np.append(phis, phis[0]+2*np.pi), np.append(I230arr, I230arr[0])).
+
+# 2026-07-31 16:38:41.446513
++/run python hypothesis_table.py
+
+# 2026-07-31 16:50:52.015376
++Y
