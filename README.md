@@ -42,3 +42,40 @@ bars: ~95% expected by construction). Bootstrap errors shrink exactly as
 sqrt(N) when averaging phases: 0.1665 -> 0.0589 over 1 -> 8 phases.
 First blind recovery of a hidden physical quantity from noisy synthetic
 measurements — the full project's inference logic demonstrated end to end.
+
+## Phase 4: the depth experiment (COMPLETE)
+Question: does Faraday rotation add recoverable depth information to black
+hole hotspot reconstruction, beyond what intensity fitting (the constant-
+derotation approach of Levis et al. 2024) already provides?
+
+Setup: blob orbiting at r=8M, observer at 20 deg inclination (Sgr A*-like,
+where the front/back mirror degeneracy is strongest). Method 1 fits
+intensity only; Method 2 adds the 213-229 GHz sideband polarization-angle
+difference (the Faraday depth signal); Method 3 uses the depth signal alone.
+200 noise realizations per point; observations and fitting tables rendered
+on different pixel grids (decoupled) at converged 64-pixel resolution.
+
+Result (consistent across three independent starting phases 0.7/2.0/4.5 rad):
+- Method 1 collapses from ~82% correct front/back direction at 5% intensity
+  noise to chance (~50%) by 20-30% noise -- discrimination dies as 1/sigma^2,
+  measured quantitatively.
+- Method 2 holds 85-94% across the entire 5-50% noise sweep. At high noise
+  its discrimination (median delta-chi2 ~5) is supplied essentially entirely
+  by the Faraday channel (Method 1's falls to ~0.3-0.6).
+- Method 3 alone sits at chance: the depth curve is nearly direction-blind
+  without intensity pinning the orbital phase.
+Conclusion: the two channels are complementary -- intensity anchors WHERE
+the blob is in its cycle; the chromatic Faraday signal determines WHICH WAY
+it moves through the magnetized gas. Under realistic source variability
+(>=20%, cf. Wielgus et al. 2022 light curves), the Faraday channel supplies
+all front/back depth information.
+
+Methodological note: an earlier version of this experiment gave inflated
+results (100%/91.5%) traced to shared pixelation between data and model on
+an under-resolved 32-pixel grid (blob ~1 pixel wide). Caught by a grid-
+decoupling test, resolved by convergence testing (32->48->64; peak depth
+signal converged 10.45 -> 8.86 -> 8.87 deg; residual table change 48->64
+~10% of signal range, documented as the precision limit). A silent
+hardcoded-filename bug in the sweep script was also caught by making
+scripts print their input files. Final numbers are grid-decoupled and
+converged.
