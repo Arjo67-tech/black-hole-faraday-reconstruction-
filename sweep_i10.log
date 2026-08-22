@@ -1,0 +1,13 @@
+table file: obs_table64_i10.npz
+data file: obs64_i10.npz
+sigma_I=0.05:  M1  84.5%  M2  89.0%  M3  45.0%   (median dchi2: 3.3 / 4.8 / 0.5)
+sigma_I=0.10:  M1  59.5%  M2  73.0%  M3  50.0%   (median dchi2: 1.2 / 2.5 / 0.5)
+sigma_I=0.15:  M1  57.5%  M2  73.0%  M3  52.5%   (median dchi2: 0.7 / 2.2 / 0.4)
+sigma_I=0.20:  M1  55.5%  M2  66.5%  M3  57.0%   (median dchi2: 0.5 / 1.8 / 0.5)
+sigma_I=0.30:  M1  47.5%  M2  68.0%  M3  48.0%   (median dchi2: 0.3 / 1.6 / 0.4)
+sigma_I=0.50:  M1  52.0%  M2  63.5%  M3  50.0%   (median dchi2: 0.3 / 1.7 / 0.5)
+
+check (M2 >= 80% at 15% and 20% noise):      FAIL
+check (M2 beats M1 by >= 10 pts at 20%):     PASS
+OVERALL: FAIL
+saved sweep_i10.png

@@ -1,0 +1,13 @@
+table file: obs_table64_a09.npz
+data file: obs64_a09.npz
+sigma_I=0.05:  M1  85.0%  M2  96.0%  M3  51.5%   (median dchi2: 4.4 / 15.5 / 1.0)
+sigma_I=0.10:  M1  65.5%  M2  98.5%  M3  59.5%   (median dchi2: 1.5 / 12.9 / 1.0)
+sigma_I=0.15:  M1  59.5%  M2  96.5%  M3  55.5%   (median dchi2: 1.0 / 11.1 / 1.0)
+sigma_I=0.20:  M1  60.5%  M2  97.0%  M3  58.5%   (median dchi2: 0.7 / 10.5 / 1.0)
+sigma_I=0.30:  M1  53.0%  M2  95.5%  M3  55.0%   (median dchi2: 0.5 / 10.8 / 1.0)
+sigma_I=0.50:  M1  46.0%  M2  91.5%  M3  55.5%   (median dchi2: 0.3 / 9.6 / 0.9)
+
+check (M2 >= 80% at 15% and 20% noise):      PASS
+check (M2 beats M1 by >= 10 pts at 20%):     PASS
+OVERALL: PASS
+saved sweep_a09.png

@@ -10,7 +10,7 @@ tab = np.load(TAB)
 print(f"table file: {TAB}")
 obs = np.load(OBS_FILE)
 
-OMEGA = 1.0/8.0**1.5
+OMEGA = 1.0/(8.0**1.5 + 0.9)  # Kerr a=0.9 — must match make_obs64_a09.py
 SIGMA_DCHI = np.radians(1.5)
 NBOOT = 200
 SIGMAS_I = [0.05, 0.10, 0.15, 0.20, 0.30, 0.50]
